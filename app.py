@@ -1,14 +1,12 @@
 from fastapi import FastAPI, UploadFile, File
-from fastapi.middleware.cors import CORSMiddleware
 import fitz  # PyMuPDF
+import requests
 import os
-import google.generativeai as genai
-
-# Load Gemini API key from environment variable
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
 
+# CORS for frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,6 +14,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Hugging Face API setup
+API_URL = "https://api-inference.huggingface.co/models/facebook/bart-large-cnn"
+headers = {"Authorization": f"Bearer {os.getenv('HF_API_KEY')}"}
+
+def query_huggingface(payload):
+    response = requests.post(API_URL, headers=headers, json=payload)
+    return response.json()
 
 @app.post("/summarize")
 async def summarize(file: UploadFile = File(...)):
@@ -25,8 +31,6 @@ async def summarize(file: UploadFile = File(...)):
 
     doc = fitz.open("temp.pdf")
     full_text = "".join([page.get_text() for page in doc])
-
-    model = genai.GenerativeModel("gemini-pro")
-    response = model.generate_content(f"Summarize this medical report in simple terms:\n\n{full_text}")
-
-    return {"summary": response.text}
+    
+    result = query_huggingface({"inputs": full_text})
+    return {"summary": result[0]["summary_text"]}

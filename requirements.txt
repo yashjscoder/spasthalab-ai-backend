@@ -1,7 +1,6 @@
 fastapi
 uvicorn
-openai
-PyMuPDF
+transformers
 python-multipart
-google-generativeai
-
+PyMuPDF
+requests
