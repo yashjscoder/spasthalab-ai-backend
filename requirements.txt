@@ -3,5 +3,5 @@ uvicorn
 openai
 PyMuPDF
 python-multipart
-
+google-generativeai
 
