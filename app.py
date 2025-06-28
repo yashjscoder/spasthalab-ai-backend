@@ -26,7 +26,8 @@ async def summarize(file: UploadFile = File(...)):
     full_text = "".join([page.get_text() for page in doc])
 
     response = client.chat.completions.create(
-        model="gpt-4",
+    model="gpt-3.5-turbo",  
+
         messages=[
             {"role": "system", "content": "Summarize this medical report in simple, layman terms."},
             {"role": "user", "content": full_text}
